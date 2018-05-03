@@ -19,7 +19,7 @@
 Name:    dbus
 Epoch:   1
 Version: 1.12.8
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: D-BUS message bus
 
 Group:   System Environment/Libraries
@@ -74,12 +74,22 @@ D-BUS is a system for sending messages between applications. It is
 used both for the system-wide message bus service, and as a
 per-user-login-session messaging facility.
 
+%package common
+Summary:        D-BUS message bus configuration
+Group:          System Environment/Libraries
+BuildArch:      noarch
+Requires(pre):  /usr/sbin/useradd
+
+%description common
+The %{name}-common package provides the configuration and setup files for D-Bus
+implementations to provide a System and User Message Bus.
+
 %package daemon
 Summary:        D-BUS message bus
 Group:          System Environment/Libraries
 Requires:       libselinux%{?_isa} >= %{libselinux_version}
+Requires:       dbus-common = %{epoch}:%{version}-%{release}
 Requires:       dbus-libs%{?_isa} = %{epoch}:%{version}-%{release}
-Requires(pre):  /usr/sbin/useradd
 
 %description daemon
 D-BUS is a system for sending messages between applications. It is
@@ -260,7 +270,7 @@ popd
 %endif
 
 
-%pre daemon
+%pre common
 # Add the "dbus" user and group
 /usr/sbin/groupadd -r -g %{dbus_user_uid} dbus 2>/dev/null || :
 /usr/sbin/useradd -c 'System message bus' -u %{dbus_user_uid} -g %{dbus_user_uid} \
@@ -285,6 +295,20 @@ popd
 
 %files
 
+%files common
+%dir %{_sysconfdir}/dbus-1
+%dir %{_sysconfdir}/dbus-1/session.d
+%dir %{_sysconfdir}/dbus-1/system.d
+%config %{_sysconfdir}/dbus-1/session.conf
+%config %{_sysconfdir}/dbus-1/system.conf
+%dir %{_datadir}/dbus-1
+%{_datadir}/dbus-1/session.conf
+%{_datadir}/dbus-1/system.conf
+%{_datadir}/dbus-1/services
+%{_datadir}/dbus-1/system-services
+%{_datadir}/dbus-1/interfaces
+%{_sysusersdir}/dbus.conf
+
 %files daemon
 # Strictly speaking, we could remove the COPYING from this subpackage and 
 # just have it be in libs, because dbus Requires dbus-libs.
@@ -297,11 +321,6 @@ popd
 %exclude %{_pkgdocdir}/introspect.*
 %exclude %{_pkgdocdir}/system-activation.txt
 %exclude %{_pkgdocdir}/*.html
-%dir %{_sysconfdir}/dbus-1
-%dir %{_sysconfdir}/dbus-1/session.d
-%dir %{_sysconfdir}/dbus-1/system.d
-%config %{_sysconfdir}/dbus-1/session.conf
-%config %{_sysconfdir}/dbus-1/system.conf
 %ghost %dir /run/%{name}
 %dir %{_localstatedir}/lib/dbus/
 %{_bindir}/dbus-daemon
@@ -320,12 +339,6 @@ popd
 %{_mandir}/man1/dbus-test-tool.1*
 %{_mandir}/man1/dbus-update-activation-environment.1*
 %{_mandir}/man1/dbus-uuidgen.1*
-%dir %{_datadir}/dbus-1
-%{_datadir}/dbus-1/session.conf
-%{_datadir}/dbus-1/system.conf
-%{_datadir}/dbus-1/services
-%{_datadir}/dbus-1/system-services
-%{_datadir}/dbus-1/interfaces
 %dir %{_libexecdir}/dbus-1
 # See doc/system-activation.txt in source tarball for the rationale
 # behind these permissions
@@ -340,7 +353,6 @@ popd
 %{_userunitdir}/dbus.service
 %{_userunitdir}/dbus.socket
 %{_userunitdir}/sockets.target.wants/dbus.socket
-%{_sysusersdir}/dbus.conf
 
 %files libs
 %{!?_licensedir:%global license %%doc}
@@ -379,6 +391,11 @@ popd
 
 
 %changelog
+* Wed May 16 2018 David Herrmann <dh.herrmann@gmail.com> - 1:1.12.8-3
+- Extract 'dbus-common' package from 'dbus-daemon' to provide XML configuration
+  and setup files as independent package ready for alternative Message Bus
+  implementations to be used.
+
 * Wed May 16 2018 David Herrmann <dh.herrmann@gmail.com> - 1:1.12.8-2
 - Turn 'dbus' package into 'dbus-daemon' package, but keep 'dbus' for
   compatibility around and make it pull in the new 'dbus-daemon' package.
