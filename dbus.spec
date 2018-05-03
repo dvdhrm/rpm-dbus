@@ -19,7 +19,7 @@
 Name:    dbus
 Epoch:   1
 Version: 1.12.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: D-BUS message bus
 
 Group:   System Environment/Libraries
@@ -56,10 +56,6 @@ BuildRequires: cmake
 %{?systemd_requires}
 BuildRequires:    systemd
 
-Requires:      libselinux%{?_isa} >= %{libselinux_version}
-Requires:      dbus-libs%{?_isa} = %{epoch}:%{version}-%{release}
-Requires(pre): /usr/sbin/useradd
-
 # Note: These is only required for --with-tests; when bootstrapping, you can
 # pass --without-tests.
 %if %{with tests}
@@ -71,7 +67,21 @@ BuildRequires: pygobject3
 BuildRequires: /usr/bin/Xvfb
 %endif
 
+Requires: %{name}-daemon = %{epoch}:%{version}-%{release}
+
 %description
+D-BUS is a system for sending messages between applications. It is
+used both for the system-wide message bus service, and as a
+per-user-login-session messaging facility.
+
+%package daemon
+Summary:        D-BUS message bus
+Group:          System Environment/Libraries
+Requires:       libselinux%{?_isa} >= %{libselinux_version}
+Requires:       dbus-libs%{?_isa} = %{epoch}:%{version}-%{release}
+Requires(pre):  /usr/sbin/useradd
+
+%description daemon
 D-BUS is a system for sending messages between applications. It is
 used both for the system-wide message bus service, and as a
 per-user-login-session messaging facility.
@@ -86,7 +96,7 @@ This package contains lowlevel libraries for accessing D-BUS.
 %package doc
 Summary: Developer documentation for D-BUS
 Group: Documentation
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}-daemon = %{epoch}:%{version}-%{release}
 BuildArch: noarch
 
 %description doc
@@ -97,7 +107,7 @@ other supporting documentation such as the introspect dtd file.
 Summary: Development files for D-BUS
 Group: Development/Libraries
 # The server package can be a different architecture.
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}-daemon = %{epoch}:%{version}-%{release}
 # For xml directory ownership.
 Requires: xml-common
 
@@ -106,19 +116,19 @@ This package contains libraries and header files needed for
 developing software that uses D-BUS.
 
 %package tests
-Summary: Tests for the %{name} package
+Summary: Tests for the %{name}-daemon package
 Group: Development/Libraries
-Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-daemon%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description tests
 The %{name}-tests package contains tests that can be used to verify
-the functionality of the installed %{name} package.
+the functionality of the installed %{name}-daemon package.
 
 %package x11
 Summary: X11-requiring add-ons for D-BUS
 Group: Development/Libraries
 # The server package can be a different architecture.
-Requires: %{name} = %{epoch}:%{version}-%{release}
+Requires: %{name}-daemon = %{epoch}:%{version}-%{release}
 
 %description x11
 D-BUS contains some tools that require Xlib to be installed, those are
@@ -250,23 +260,23 @@ popd
 %endif
 
 
-%pre
+%pre daemon
 # Add the "dbus" user and group
 /usr/sbin/groupadd -r -g %{dbus_user_uid} dbus 2>/dev/null || :
 /usr/sbin/useradd -c 'System message bus' -u %{dbus_user_uid} -g %{dbus_user_uid} \
     -s /sbin/nologin -r -d '/' dbus 2> /dev/null || :
 
-%post
+%post daemon
 %systemd_post dbus.service dbus.socket
 %systemd_user_post dbus.service dbus.socket
 
 %post libs -p /sbin/ldconfig
 
-%preun
+%preun daemon
 %systemd_preun dbus.service dbus.socket
 %systemd_user_preun dbus.service dbus.socket
 
-%postun
+%postun daemon
 %systemd_postun dbus.service dbus.socket
 %systemd_user_postun dbus.service dbus.socket
 
@@ -274,6 +284,8 @@ popd
 
 
 %files
+
+%files daemon
 # Strictly speaking, we could remove the COPYING from this subpackage and 
 # just have it be in libs, because dbus Requires dbus-libs.
 %{!?_licensedir:%global license %%doc}
@@ -367,6 +379,10 @@ popd
 
 
 %changelog
+* Wed May 16 2018 David Herrmann <dh.herrmann@gmail.com> - 1:1.12.8-2
+- Turn 'dbus' package into 'dbus-daemon' package, but keep 'dbus' for
+  compatibility around and make it pull in the new 'dbus-daemon' package.
+
 * Mon Apr 30 2018 David King <amigadave@amigadave.com> - 1:1.12.8-1
 - Update to 1.12.8 (#1556590)
 
