@@ -19,7 +19,7 @@
 Name:    dbus
 Epoch:   1
 Version: 1.12.8
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: D-BUS message bus
 
 Group:   System Environment/Libraries
@@ -90,11 +90,21 @@ Group:          System Environment/Libraries
 Requires:       libselinux%{?_isa} >= %{libselinux_version}
 Requires:       dbus-common = %{epoch}:%{version}-%{release}
 Requires:       dbus-libs%{?_isa} = %{epoch}:%{version}-%{release}
+Requires:       dbus-tools = %{epoch}:%{version}-%{release}
 
 %description daemon
 D-BUS is a system for sending messages between applications. It is
 used both for the system-wide message bus service, and as a
 per-user-login-session messaging facility.
+
+%package tools
+Summary:        D-BUS Tools and Utilities
+Group:          Development/Libraries
+Requires:       dbus-libs%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description tools
+Tools and utilities to interact with a running D-Bus Message Bus, provided by
+the reference implementation.
 
 %package libs
 Summary: Libraries for accessing D-BUS
@@ -324,21 +334,13 @@ popd
 %ghost %dir /run/%{name}
 %dir %{_localstatedir}/lib/dbus/
 %{_bindir}/dbus-daemon
-%{_bindir}/dbus-send
 %{_bindir}/dbus-cleanup-sockets
 %{_bindir}/dbus-run-session
-%{_bindir}/dbus-monitor
 %{_bindir}/dbus-test-tool
-%{_bindir}/dbus-update-activation-environment
-%{_bindir}/dbus-uuidgen
 %{_mandir}/man1/dbus-cleanup-sockets.1*
 %{_mandir}/man1/dbus-daemon.1*
 %{_mandir}/man1/dbus-run-session.1*
-%{_mandir}/man1/dbus-monitor.1*
-%{_mandir}/man1/dbus-send.1*
 %{_mandir}/man1/dbus-test-tool.1*
-%{_mandir}/man1/dbus-update-activation-environment.1*
-%{_mandir}/man1/dbus-uuidgen.1*
 %dir %{_libexecdir}/dbus-1
 # See doc/system-activation.txt in source tarball for the rationale
 # behind these permissions
@@ -353,6 +355,18 @@ popd
 %{_userunitdir}/dbus.service
 %{_userunitdir}/dbus.socket
 %{_userunitdir}/sockets.target.wants/dbus.socket
+
+%files tools
+%{!?_licensedir:%global license %%doc}
+%license COPYING
+%{_bindir}/dbus-send
+%{_bindir}/dbus-monitor
+%{_bindir}/dbus-update-activation-environment
+%{_bindir}/dbus-uuidgen
+%{_mandir}/man1/dbus-monitor.1*
+%{_mandir}/man1/dbus-send.1*
+%{_mandir}/man1/dbus-update-activation-environment.1*
+%{_mandir}/man1/dbus-uuidgen.1*
 
 %files libs
 %{!?_licensedir:%global license %%doc}
@@ -391,6 +405,12 @@ popd
 
 
 %changelog
+* Wed May 16 2018 David Herrmann <dh.herrmann@gmail.com> - 1:1.12.8-4
+- Extract 'dbus-tools' package from 'dbus-daemon' to provide all command-line
+  utilities independent of the actual message bus. They are valid to be used
+  with independent message-bus implementations, so they should not needlessly
+  pull in dbus-daemon.
+
 * Wed May 16 2018 David Herrmann <dh.herrmann@gmail.com> - 1:1.12.8-3
 - Extract 'dbus-common' package from 'dbus-daemon' to provide XML configuration
   and setup files as independent package ready for alternative Message Bus
