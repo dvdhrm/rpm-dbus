@@ -5,8 +5,8 @@
 
 %global libselinux_version      2.0.86
 
-# fedora-release-30-0.2 added required presets to enable systemd-unit symlinks
-%global fedora_release_version  30-0.2
+# fedora-release-29-0.12 added required presets to enable systemd-unit symlinks
+%global fedora_release_version  29-0.12
 
 %global dbus_user_uid           81
 
