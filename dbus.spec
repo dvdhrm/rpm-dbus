@@ -85,7 +85,6 @@ per-user-login-session messaging facility.
 Summary:        D-BUS message bus configuration
 Group:          System Environment/Libraries
 BuildArch:      noarch
-Requires(pre):  /usr/sbin/useradd
 %{?systemd_requires}
 Requires:       fedora-release >= %{fedora_release_version}
 
@@ -100,6 +99,7 @@ Requires:       libselinux%{?_isa} >= %{libselinux_version}
 Requires:       dbus-common = %{epoch}:%{version}-%{release}
 Requires:       dbus-libs%{?_isa} = %{epoch}:%{version}-%{release}
 Requires:       dbus-tools = %{epoch}:%{version}-%{release}
+Requires(pre):  /usr/sbin/useradd
 
 %description daemon
 D-BUS is a system for sending messages between applications. It is
@@ -447,6 +447,9 @@ systemctl --no-reload --global preset dbus-daemon.service &>/dev/null || :
 
 
 %changelog
+* Tue Oct 23 2018 David Herrmann <dh.herrmann@gmail.com> - 1:1.12.10-5
+- Move useradd dependency to daemon subpackage
+
 * Fri Oct 19 2018 David King <amigadave@amigadave.com> - 1:1.12.10-4
 - Move user and group creation to daemon subpackage
 - Move systemd to Requires of common subpackage (#1638910)
