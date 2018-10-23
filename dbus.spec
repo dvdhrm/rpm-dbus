@@ -75,7 +75,8 @@ BuildRequires: pygobject3
 BuildRequires: /usr/bin/Xvfb
 %endif
 
-Requires: %{name}-daemon = %{epoch}:%{version}-%{release}
+# Since F30 the default implementation is dbus-broker over dbus-daemon
+Requires: dbus-broker >= 16-4
 
 %description
 D-BUS is a system for sending messages between applications. It is
